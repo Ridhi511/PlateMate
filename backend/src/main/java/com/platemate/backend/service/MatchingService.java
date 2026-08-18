@@ -48,7 +48,7 @@ public class MatchingService {
                 .map(org -> new MatchedOrganizationResponse(
                         org.getId(),
                         org.getName(),
-                        calculateScore(org)))
+                        calculateBasicScore(org)))
 
                 .sorted(
                         Comparator.comparing(
@@ -65,15 +65,18 @@ public class MatchingService {
         FoodListing listing =
                 foodListingRepository.findById(
                         foodListingId)
-                        .orElseThrow();
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Food listing not found"));
+
+        Organization provider =
+                listing.getOrganization();
 
         Double providerLat =
-                listing.getOrganization()
-                        .getLatitude();
+                provider.getLatitude();
 
         Double providerLon =
-                listing.getOrganization()
-                        .getLongitude();
+                provider.getLongitude();
 
         return organizationRepository
                 .findByVerificationStatus(
@@ -87,10 +90,14 @@ public class MatchingService {
                                 || org.getType() == OrganizationType.SHELTER_HOME
                                 || org.getType() == OrganizationType.COMMUNITY_KITCHEN)
 
+                .filter(org ->
+                        !org.getId().equals(
+                                provider.getId()))
+
                 .map(org -> new MatchedOrganizationResponse(
                         org.getId(),
                         org.getName(),
-                        calculateScore(
+                        calculateDistanceBasedScore(
                                 org,
                                 providerLat,
                                 providerLon)))
@@ -103,7 +110,7 @@ public class MatchingService {
                 .collect(Collectors.toList());
     }
 
-    private Double calculateScore(
+    private Double calculateBasicScore(
             Organization organization) {
 
         double trustScore =
@@ -124,7 +131,7 @@ public class MatchingService {
         return trustScore + (capacity - load);
     }
 
-    private Double calculateScore(
+    private Double calculateDistanceBasedScore(
             Organization organization,
             Double providerLat,
             Double providerLon) {
@@ -153,7 +160,7 @@ public class MatchingService {
 
         return trustScore
                 + (capacity - load)
-                - distance;
+                - (distance * 2);
     }
 
     private double calculateDistance(
@@ -168,11 +175,27 @@ public class MatchingService {
             return 1000;
         }
 
-        double latDiff = lat1 - lat2;
-        double lonDiff = lon1 - lon2;
+        final int EARTH_RADIUS = 6371;
 
-        return Math.sqrt(
-                latDiff * latDiff
-                        + lonDiff * lonDiff);
+        double latDistance =
+                Math.toRadians(lat2 - lat1);
+
+        double lonDistance =
+                Math.toRadians(lon2 - lon1);
+
+        double a =
+                Math.sin(latDistance / 2)
+                        * Math.sin(latDistance / 2)
+                        + Math.cos(Math.toRadians(lat1))
+                        * Math.cos(Math.toRadians(lat2))
+                        * Math.sin(lonDistance / 2)
+                        * Math.sin(lonDistance / 2);
+
+        double c =
+                2 * Math.atan2(
+                        Math.sqrt(a),
+                        Math.sqrt(1 - a));
+
+        return EARTH_RADIUS * c;
     }
 }

@@ -6,10 +6,9 @@ import com.platemate.backend.entity.FoodRequest;
 import com.platemate.backend.entity.Organization;
 import com.platemate.backend.enums.FoodStatus;
 import com.platemate.backend.enums.OrganizationType;
-import com.platemate.backend.enums.VerificationStatus;
 import com.platemate.backend.exception.FoodListingNotFoundException;
 import com.platemate.backend.exception.InvalidFoodRequestException;
-import com.platemate.backend.exception.OrganizationNotVerifiedException;
+
 import com.platemate.backend.repository.FoodListingRepository;
 import com.platemate.backend.repository.FoodRequestRepository;
 import com.platemate.backend.repository.OrganizationRepository;
@@ -50,12 +49,7 @@ public class FoodRequestService {
                                 new InvalidFoodRequestException(
                                         "Receiver organization not found"));
 
-        if (receiver.getVerificationStatus()
-                != VerificationStatus.VERIFIED) {
-
-            throw new OrganizationNotVerifiedException(
-                    receiver.getName());
-        }
+     
 
         if (!isReceiverOrganization(receiver.getType())) {
 

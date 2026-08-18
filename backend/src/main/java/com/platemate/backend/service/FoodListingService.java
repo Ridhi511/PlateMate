@@ -38,12 +38,7 @@ public class FoodListingService {
                                 new InvalidFoodRequestException(
                                         "Organization not found"));
 
-        if (organization.getVerificationStatus()
-                != VerificationStatus.VERIFIED) {
-
-            throw new InvalidFoodRequestException(
-                    "Organization must be verified");
-        }
+       
 
         if (!isProviderOrganization(
                 organization.getType())) {

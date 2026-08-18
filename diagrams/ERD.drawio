@@ -1,0 +1,15 @@
+                USERS
+                   |
+                   |
+            ORGANIZATIONS
+              /         \
+             /           \
+            /             \
+FOOD_LISTINGS          FOOD_REQUESTS
+        \                 /
+         \               /
+          \             /
+             MATCHES
+                |
+                |
+           DELIVERIES

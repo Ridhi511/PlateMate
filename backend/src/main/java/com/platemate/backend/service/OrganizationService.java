@@ -59,7 +59,7 @@ public class OrganizationService {
                 request.getContactNumber());
 
         organization.setVerificationStatus(
-        VerificationStatus.PENDING
+        VerificationStatus.VERIFIED
 );
 
         organization.setOwner(owner);
